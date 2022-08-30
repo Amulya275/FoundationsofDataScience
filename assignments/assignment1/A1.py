@@ -9,7 +9,7 @@ if __name__ == "__main__":
     X = data_train[independent]
     Y = data_train["Species"]
     # Train model
-    clf = DecisionTreeClassifier(random_state=0)
+    clf = DecisionTreeClassifier()
     clf.fit(X,Y)
     # Load testing data
     data_test = pd.read_csv("../data/Iris_test.csv")
