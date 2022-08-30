@@ -1,4 +1,3 @@
-#from sklearn.naive_bayes import GaussianNB
 from sklearn.tree import DecisionTreeClassifier
 import pandas as pd
 
