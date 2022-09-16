@@ -88,13 +88,15 @@ class my_KNN:
                 self.dict_test[test_row].append(distance)   
         
         
-        self.counter_dict={}
+        counter_dict={}
         
         for i in self.X_test.index:
             
             dict_v=[self.y_train[j] for j in np.argsort(self.dict_test[i])[:self.n_neighbors]]
+            
             c=Counter(dict_v)
-            self.counter_dict[i] = c
+            
+            counter_dict[i] = c
     
         dict_pred = {}
         
@@ -104,9 +106,10 @@ class my_KNN:
             
             for j in self.classes_:
             
-                dict_pred[i][j]=self.counter_dict[i][j]/self.n_neighbors
+                dict_pred[i][j]=counter_dict[i][j]/self.n_neighbors
                 
         probs = pd.DataFrame(dict_pred).T
+        
         return probs
 
 
