@@ -46,6 +46,7 @@ class my_NB:
                     
                     #{independentvariable:{category in ind variable list: {dependent variable: prob value}}}
                     self.dict_x_y[col][col_val][clss]= (p_x_y+ self.alpha)/(self.p_y[clss]+ (len(uniq_dict[col])*self.alpha))
+        print( self.dict_x_y)
         return
 
     def predict(self, X):
