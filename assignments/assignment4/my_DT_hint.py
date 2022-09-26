@@ -9,7 +9,7 @@ class my_DT:
         # criterion = {"gini", "entropy"},
         # Stop training if depth = max_depth
         # Only split node if impurity decrease >= min_impurity_decrease after the split
-        #   Weighted impurity decrease: N_t / N * (impurity - N_t_R / N_t * right_impurity - N_t_L / N_t * left_impurity)
+        # Weighted impurity decrease: N_t / N * (impurity - N_t_R / N_t * right_impurity - N_t_L / N_t * left_impurity)
         # Only split node with >= min_samples_split samples
         self.criterion = criterion
         self.max_depth = int(max_depth)
@@ -23,21 +23,30 @@ class my_DT:
         # Output impurity score
         stats = Counter(labels)
         N = float(len(labels))
+        total = sum(stats.values(), 0)
+        sum_values=0
         if self.criterion == "gini":
             # Implement gini impurity
-
-
-
+            for key in stats:
+                stats[key] /= total
+                sum_values+=stats[key]**2
+            gini = 1-sum_values
+            #print("gini:" ,gini )
+            impure=gini
+        
 
         elif self.criterion == "entropy":
             # Implement entropy impurity
-
-
-
-
+            for key in stats:
+                stats[key] /= total
+                sum_values+=(-stats[key]*np.log2(stats[key]))
+            entropy = sum_values
+            print("entropy:",entropy)
+            impure=entropy
+            
         else:
             raise Exception("Unknown criterion.")
-        return impure
+        return impure;
 
     def find_best_split(self, pop, X, labels):
         # Find the best split
@@ -47,12 +56,40 @@ class my_DT:
         #   labels: dependent variables of training data
         # Output: tuple(best feature to split, weighted impurity score of best split, splitting point of the feature, [indices of data in left node, indices of data in right node], [weighted impurity score of left node, weighted impurity score of right node])
         ######################
+        print(X.keys())
+        max_gain = 0
         best_feature = None
+        best_value = None
+        
+        def test_split(value, dataset):
+            left=[]
+            right = []
+            for i in dataset:
+                if i<value:
+                    left.append(i)
+                else:
+                    right.append(i)
+            return left,right
+        
+        def gain(groups, classes):
+            n = float(sum([len(group) for group in groups]))
+            gain_index= 0.0
+            for  group in groups:
+                size = float(len(group))
+                if size==0:
+                    continue
+                gain_index+= (1.0 - (self.impurity(labels))) * (size / n)
+                gain=self.impurity(self.classes_)-gain_index
+            return gain
+ 
+    
         for feature in X.keys():
             cans = np.array(X[feature][pop])
-
-
-
+            for i in cans:
+                groups =test_split(i,cans)
+                gain_val=gain(groups,labels)
+                print(feature,i,gain_val)
+                
         return best_feature
 
     def fit(self, X, y):
@@ -136,7 +173,12 @@ class my_DT:
                 if type(self.tree[node]) == Counter:               
                     # Calculate prediction probabilities for data point arriving at the leaf node.
                     # predictions = list of prob, e.g. prob = {"2": 1/3, "1": 2/3}
-                    prob = {"write your own code"}
+                    sum=0
+                    for i in self.tree[node]:
+                        sum+=self.tree[node][i]
+                    prob = {}
+                    for i in self.tree[node]:
+                        prob[i]=self.tree[node][i]/sum
                     predictions.append(prob)
                     break
                 else:

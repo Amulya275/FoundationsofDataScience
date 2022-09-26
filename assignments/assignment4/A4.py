@@ -1,4 +1,4 @@
-from my_DT import my_DT
+from my_DT_hint import my_DT
 import pandas as pd
 
 if __name__ == "__main__":
@@ -9,7 +9,7 @@ if __name__ == "__main__":
     X = data_train[independent]
     y = data_train["Species"]
     # Train model
-    clf = my_DT()
+    clf = my_DT() #criterion="entropy"
     clf.fit(X,y)
     # Load testing data
     data_test = pd.read_csv("../data/Iris_test.csv")
