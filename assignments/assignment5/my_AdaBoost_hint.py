@@ -52,7 +52,9 @@ class my_AdaBoost:
                 self.estimators = [self.estimators[i]]
                 break
             # Compute alpha for estimator i (don't forget to use k for multi-class)
-            self.alpha.append("write your own code")
+            
+            
+            self.alpha.append( (np.log(1-error)/error) + (np.log(k-1) ) )
 
             # Update wi
             w = "write your own code"

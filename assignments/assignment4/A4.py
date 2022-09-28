@@ -9,7 +9,7 @@ if __name__ == "__main__":
     X = data_train[independent]
     y = data_train["Species"]
     # Train model
-    clf = my_DT() #criterion="entropy"
+    clf = my_DT(criterion="gini", max_depth=3) #criterion="entropy"
     clf.fit(X,y)
     # Load testing data
     data_test = pd.read_csv("../data/Iris_test.csv")
