@@ -74,8 +74,8 @@ class my_DT:
                     y_array, y_left, y_right = np.array(y_parent).tolist(), np.array(y_parent[X_left.index]).tolist(),np.array(y_parent[X_right.index]).tolist()
                     
                      # information gain
-                    wt_imp_left = ( len(y_left) / len(y_array) ) * self.impurity(y_left)
-                    wt_imp_right = ( len(y_right) / len(y_array) ) * self.impurity(y_right)
+                    wt_imp_left = ( len(y_left) / len(labels) ) * self.impurity(y_left)
+                    wt_imp_right = ( len(y_right) / len(labels) ) * self.impurity(y_right)
                     wt_split = wt_imp_left + wt_imp_right
                     
                     gain = self.impurity(y_array) - wt_split
