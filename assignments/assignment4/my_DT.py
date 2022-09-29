@@ -9,7 +9,7 @@ class my_DT:
         # criterion = {"gini", "entropy"},
         # Stop training if depth = max_depth
         # Only split node if impurity decrease >= min_impurity_decrease after the split
-        # Weighted impurity decrease: N_t / N * (impurity - N_t_R / N_t * right_impurity - N_t_L / N_t * left_impurity)
+        #   Weighted impurity decrease: N_t / N * (impurity - N_t_R / N_t * right_impurity - N_t_L / N_t * left_impurity)
         # Only split node with >= min_samples_split samples
         self.criterion = criterion
         self.max_depth = int(max_depth)
@@ -23,29 +23,29 @@ class my_DT:
         # Output impurity score
         stats = Counter(labels)
         N = float(len(labels))
-        total = sum(stats.values(), 0)
-        sum_values=0
-        if self.criterion == "gini":
-            # Implement gini impurity
-            for key in stats:
-                stats[key] /= total
-                sum_values+=stats[key]**2
-            gini = 1-sum_values
-            #print("gini:" ,gini )
-            impure=gini
         
-
+        if self.criterion == "gini":
+            
+            # Implement gini impurity            
+            gini = 0
+            for cls in self.classes_:
+                p_cls = len(labels[labels == cls]) / len(labels)
+                gini += p_cls**2
+            impure =  1 - gini
+        
         elif self.criterion == "entropy":
             # Implement entropy impurity
+            entropy = 0
             for key in stats:
-                stats[key] /= total
-                sum_values+=(-stats[key]*np.log2(stats[key]))
-            entropy = sum_values
-            print("entropy:",entropy)
-            impure=entropy
+                p_cls = stats[key]/N
+                entropy -= (p_cls)*np.log2(p_cls)
+            impure = entropy
+            
         else:
             raise Exception("Unknown criterion.")
-        return impure;
+            
+        return impure
+    
 
     def find_best_split(self, pop, X, labels):
         # Find the best split
@@ -55,44 +55,48 @@ class my_DT:
         #   labels: dependent variables of training data
         # Output: tuple(best feature to split, weighted impurity score of best split, splitting point of the feature, [indices of data in left node, indices of data in right node], [weighted impurity score of left node, weighted impurity score of right node])
         ######################
-    
         
         best_feature = None
-        max_gain = 0.0
+        best_gain = 0
         y_parent = pd.Series(labels)[pop]
         X_pop = X.iloc[pop]
         
         for feature in X_pop.keys():
 
-            #values = np.unique(X_pop[feature])
+            values = np.unique(X_pop[feature])
+            values_sorted = np.argsort(values)
             
-            for value in X_pop[feature]:
+            for value in values:
                 X_left =X_pop[X_pop[feature]<=value]
                 X_right = X_pop[X_pop[feature]>value]
                 
                 if len(X_left)>0 and len(X_right)>0:
-                    y_array, y_left, y_right = np.array(y_parent).tolist(), np.array(y_parent[X_left.index]).tolist(),np.array(y_parent[X_right.index]).tolist()
+                    y_array =  np.array(y_parent)
+                    y_left =  np.array(y_parent[X_left.index])
+                    y_right = np.array(y_parent[X_right.index])
                     
                      # information gain
-                    wt_imp_left = ( len(y_left) / len(labels) ) * self.impurity(y_left)
-                    wt_imp_right = ( len(y_right) / len(labels) ) * self.impurity(y_right)
+                    wt_imp_left = ( len(y_left) / len(y_array) ) * self.impurity(y_left)
+                    wt_imp_right = ( len(y_right) / len(y_array) ) * self.impurity(y_right)
                     wt_split = wt_imp_left + wt_imp_right
+                    
+                    weight_of_Split = len(y_array) / len(labels)
                     
                     gain = self.impurity(y_array) - wt_split
             
-                    if gain>=max_gain:
-                        max_gain = gain
-                        best_feature = (feature,wt_split ,value, [np.array(X_left.index).tolist(), np.array(X_right.index).tolist()], [wt_imp_left, wt_imp_right])
-        
-        print(best_feature)
+                    if gain>=best_gain:
+                        best_gain = gain
+#                         val_bef = values[values<value].max()
+#                         split_value = (value+val_bef)/2
+                        best_feature = (feature, weight_of_Split*wt_split, value, [np.array(X_left.index), np.array(X_right.index)], [wt_imp_left, wt_imp_right])
+
         return best_feature
-                
+    
     
 
     def fit(self, X, y):
         # X: pd.DataFrame, independent variables, float
         # y: list, np.array or pd.Series, dependent variables, int or str
-        self.y=y
         self.classes_ = list(set(list(y)))
         labels = np.array(y)
         N = len(y)
@@ -110,13 +114,13 @@ class my_DT:
         #########################################################################
         level = 0
         nodes = [0]
-        while level < self.max_depth and nodes:
+        while level < self.max_depth+1 and nodes:
             # Breadth-first search to split nodes
             next_nodes = []
             for node in nodes:
                 current_pop = population[node]
                 current_impure = impurity[node]
-                if len(current_pop) < self.min_samples_split or current_impure == 0 or level+1== self.max_depth:
+                if len(current_pop) < self.min_samples_split or current_impure == 0 or level == self.max_depth:
                     # The node is a leaf node
                     self.tree[node] = Counter(labels[current_pop])
                 else:
@@ -141,19 +145,10 @@ class my_DT:
         # X: pd.DataFrame, independent variables, float
         # return predictions: list
 
-        predictions = []
-        for i in range(len(X)):
-            node = 0
-            while True:
-                if type(self.tree[node]) == Counter:
-                    label = list(self.tree[node].keys())[np.argmax(self.tree[node].values())]
-                    predictions.append(label)
-                    break
-                else:
-                    if X[self.tree[node][0]][i] < self.tree[node][1]:
-                        node = node * 2 + 1
-                    else:
-                        node = node * 2 + 2
+        pred_df = self.predict_proba(X) 
+        # Extract all the y classes corresponding to maximum probabilities in each record into a list
+        predictions = pred_df.idxmax(1).tolist()
+        
         return predictions
 
     def predict_proba(self, X):
@@ -168,15 +163,14 @@ class my_DT:
         for i in range(len(X)):
             node = 0
             while True:
+#                 print(node)
                 if type(self.tree[node]) == Counter:               
                     # Calculate prediction probabilities for data point arriving at the leaf node.
                     # predictions = list of prob, e.g. prob = {"2": 1/3, "1": 2/3}
-                    sum=0
-                    for i in self.tree[node]:
-                        sum+=self.tree[node][i]
-                    prob = {}
-                    for i in self.classes_:
-                        prob[i]=self.tree[node][i]/sum
+                    ct = self.tree[node]
+#                     print(ct)
+                    prob = {cls: ct[cls]/sum(ct.values()) for cls in self.classes_}
+#                     print(prob)
                     predictions.append(prob)
                     break
                 else:
