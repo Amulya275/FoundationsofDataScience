@@ -1,4 +1,4 @@
-from my_AdaBoost_hint import my_AdaBoost
+from my_AdaBoost import my_AdaBoost
 from sklearn.tree import DecisionTreeClassifier
 
 import pandas as pd

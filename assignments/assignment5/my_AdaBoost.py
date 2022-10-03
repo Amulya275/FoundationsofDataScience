@@ -1,11 +1,11 @@
 import pandas as pd
 import numpy as np
 from copy import deepcopy
-from pdb import set_trace
+# from pdb import set_trace
 
 class my_AdaBoost:
 
-    def _init_(self, base_estimator = None, n_estimators = 50):        
+    def __init__(self, base_estimator = None, n_estimators = 50):        
         # Multi-class Adaboost algorithm (SAMME)
         # base_estimator: the base classifier class, e.g. my_DT
         # n_estimators: # of base_estimator rounds
