@@ -2,7 +2,7 @@ from my_AdaBoost_hint import my_AdaBoost
 from sklearn.tree import DecisionTreeClassifier
 
 import pandas as pd
-import numpy as np
+
 
 if __name__ == "__main__":
     #  Load training data
