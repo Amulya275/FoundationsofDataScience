@@ -1,7 +1,8 @@
-from my_AdaBoost import my_AdaBoost
+from my_AdaBoost_hint import my_AdaBoost
 from sklearn.tree import DecisionTreeClassifier
 
 import pandas as pd
+import numpy as np
 
 if __name__ == "__main__":
     #  Load training data
@@ -17,6 +18,7 @@ if __name__ == "__main__":
     # Load testing data
     data_test = pd.read_csv("../data/Iris_test.csv")
     X_test = data_test[independent]
+    
     # Predict
     predictions = clf.predict(X_test)
     # Predict probabilities

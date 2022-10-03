@@ -18,6 +18,7 @@ class my_AdaBoost:
         # y: list, np.array or pd.Series, dependent variables, int or str
 
         self.classes_ = list(set(list(y)))
+        
         k = len(self.classes_)
         n = len(y)
         w = np.array([1.0 / n] * n)
@@ -32,8 +33,10 @@ class my_AdaBoost:
             self.estimators[i].fit(sampled, labels[sample])
             predictions = self.estimators[i].predict(X)
             diffs = np.array(predictions) != y
+            
             # Compute error rate and alpha for estimator i
             error = np.sum(diffs * w)
+            
             while error >= (1 - 1.0 / k):
                 w = np.array([1.0 / n] * n)
                 sample = np.random.choice(n, n, p=w)
@@ -43,8 +46,11 @@ class my_AdaBoost:
                 self.estimators[i].fit(sampled, labels[sample])
                 predictions = self.estimators[i].predict(X)
                 diffs = np.array(predictions) != y
+                print(diffs)
                 # Compute error rate and alpha for estimator i
+                 
                 error = np.sum(diffs * w)
+                print(error)
             # If one base estimator predicts perfectly,
             # Use that base estimator only
             if error == 0:
@@ -57,10 +63,16 @@ class my_AdaBoost:
             self.alpha.append( (np.log(1-error)/error) + (np.log(k-1) ) )
 
             # Update wi
-            w = "write your own code"
-
+            for i in range(len(w)):
+                if (diffs[i]==True):
+                    w[i]=w[i]*np.exp( self.alpha[-1])  
+                else:
+                    w[i]= w[i]
+            w=w/np.sum(w)
+        
         # Normalize alpha
         self.alpha = self.alpha / np.sum(self.alpha)
+    
         return
 
     def predict(self, X):
@@ -70,7 +82,7 @@ class my_AdaBoost:
         predictions = [self.classes_[np.argmax(prob)] for prob in probs.to_numpy()]
         return predictions
 
-    def predict_proba(self, X):
+    def predict_proba(self, X): 
         # X: pd.DataFrame, independent variables, float
         # prob: what percentage of the base estimators predict input as class C
         # prob(x)[C] = sum(alpha[j] * (base_model[j].predict(x) == C))
@@ -79,11 +91,10 @@ class my_AdaBoost:
         # write your code below
         probs = {}
         for label in self.classes_:
-            # Calculate probs for each label
-            "write your own code"
-
-
-
+            probs[label] =  np.zeros(len(X))
+            for i in range(len(self.estimators)):
+                probs[label]+=(self.alpha[i] * ((self.estimators[i].predict(X)) == label))
+        
         probs = pd.DataFrame(probs, columns=self.classes_)
         return probs
 
