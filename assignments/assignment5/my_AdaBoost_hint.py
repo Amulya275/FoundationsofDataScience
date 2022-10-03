@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from copy import deepcopy
-from pdb import set_trace
+# from pdb import set_trace
 
 class my_AdaBoost:
 
@@ -18,7 +18,6 @@ class my_AdaBoost:
         # y: list, np.array or pd.Series, dependent variables, int or str
 
         self.classes_ = list(set(list(y)))
-        
         k = len(self.classes_)
         n = len(y)
         w = np.array([1.0 / n] * n)
@@ -30,49 +29,43 @@ class my_AdaBoost:
             # Train base classifier with sampled training data
             sampled = X.iloc[sample]
             sampled.index = range(len(sample))
-            self.estimators[i].fit(sampled, labels[sample])
-            predictions = self.estimators[i].predict(X)
+            self.estimators[i].fit(sampled.values, labels[sample])
+            predictions = self.estimators[i].predict(X.values)
             diffs = np.array(predictions) != y
-            
             # Compute error rate and alpha for estimator i
             error = np.sum(diffs * w)
-            
             while error >= (1 - 1.0 / k):
                 w = np.array([1.0 / n] * n)
                 sample = np.random.choice(n, n, p=w)
                 # Train base classifier with sampled training data
                 sampled = X.iloc[sample]
                 sampled.index = range(len(sample))
-                self.estimators[i].fit(sampled, labels[sample])
-                predictions = self.estimators[i].predict(X)
+                self.estimators[i].fit(sampled.values, labels[sample].values)
+                predictions = self.estimators[i].predict(X.values)
                 diffs = np.array(predictions) != y
-                print(diffs)
                 # Compute error rate and alpha for estimator i
-                 
                 error = np.sum(diffs * w)
-                print(error)
             # If one base estimator predicts perfectly,
             # Use that base estimator only
             if error == 0:
                 self.alpha = [1]
                 self.estimators = [self.estimators[i]]
                 break
+                
             # Compute alpha for estimator i (don't forget to use k for multi-class)
-            
-            
-            self.alpha.append( (np.log(1-error)/error) + (np.log(k-1) ) )
+            self.alpha.append(np.log((1-error)/error) + (np.log(k-1)))
 
             # Update wi
-            for i in range(len(w)):
-                if (diffs[i]==True):
-                    w[i]=w[i]*np.exp( self.alpha[-1])  
+            for i in range(len(diffs)):
+                if (diffs[i]):
+                    w[i]=w[i]*np.exp(self.alpha[-1])  
                 else:
                     w[i]= w[i]
+                    
             w=w/np.sum(w)
-        
+
         # Normalize alpha
         self.alpha = self.alpha / np.sum(self.alpha)
-    
         return
 
     def predict(self, X):
@@ -82,7 +75,7 @@ class my_AdaBoost:
         predictions = [self.classes_[np.argmax(prob)] for prob in probs.to_numpy()]
         return predictions
 
-    def predict_proba(self, X): 
+    def predict_proba(self, X):
         # X: pd.DataFrame, independent variables, float
         # prob: what percentage of the base estimators predict input as class C
         # prob(x)[C] = sum(alpha[j] * (base_model[j].predict(x) == C))
@@ -90,15 +83,19 @@ class my_AdaBoost:
         # Note that len(self.estimators) can sometimes be different from self.n_estimators
         # write your code below
         probs = {}
+        # for each class
         for label in self.classes_:
-            probs[label] =  np.zeros(len(X))
-            for i in range(len(self.estimators)):
-                probs[label]+=(self.alpha[i] * ((self.estimators[i].predict(X)) == label))
-        
+            proba_class = []
+            # for each record
+            for rec in np.array(X):
+                prob_sum = 0
+                # for each estimator
+                for j in range(len(self.estimators)):
+                    base_prob = self.alpha[j] * (self.estimators[j].predict([rec]) == label)
+                    prob_sum += base_prob
+                # Sum of (alpha * prob of base classifier prediction)
+                proba_class.append(prob_sum)
+            probs[label] = proba_class
+
         probs = pd.DataFrame(probs, columns=self.classes_)
         return probs
-
-
-
-
-
