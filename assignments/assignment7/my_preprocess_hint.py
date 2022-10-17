@@ -112,10 +112,14 @@ def stratified_sampling(y, ratio, replace = True):
     if ratio<=0 or ratio>=1:
         raise Exception("ratio must be 0 < ratio < 1.")
     y_array = np.asarray(y)
-    print(y_array)
     
-    
+    stratified_indices = np.array([])
+
+    for y_class in y.unique():
+        class_count = int(np.ceil(ratio * y[y==y_class].count()))
+        class_indices =  y[y==y_class].index
+        stratified_indices = np.append(stratified_indices, np.random.choice(class_indices, size = class_count, replace = replace))
     # Write your own code below
 
 
-    return;# sample.astype(int)
+    return stratified_indices.astype(int);# sample.astype(int)
