@@ -1,4 +1,4 @@
-from my_KMeans_hint import my_KMeans
+from untitled3 import my_KMeans
 import pandas as pd
 
 if __name__ == "__main__":
@@ -9,7 +9,7 @@ if __name__ == "__main__":
     X = data_train[independent]
     y = data_train["Species"]
     # Train model
-    clf = my_KMeans(n_clusters=3) #init ="random")
+    clf = my_KMeans(n_clusters=20,init ="random") #init ="random")
     y_p = clf.fit_predict(X)
     # Show training results
     print("Classes:")

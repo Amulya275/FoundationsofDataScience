@@ -3,7 +3,7 @@ import numpy as np
 from pdb import set_trace
 
 
-class my_KMeans:
+# class my_KMeans:
 
     def __init__(self, n_clusters=8, init = "k-means++", n_init = 10, max_iter=300, tol=1e-4):
         # init = {"k-means++", "random"}

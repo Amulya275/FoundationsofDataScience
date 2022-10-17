@@ -1,11 +1,17 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Oct 13 18:28:16 2022
+
+@author: dell
+"""
+
 import pandas as pd
 import numpy as np
 from pdb import set_trace
 
+class my_KMeans:
 
-# class my_KMeans:
-
-    def __init__(self, n_clusters=8, init = "k-means++", n_init = 10, max_iter=300, tol=1e-4):
+    def __init__(self, n_clusters=8, init = "random", n_init = 10, max_iter=300, tol=1e-4):
         # init = {"k-means++", "random"}
         # stop when either # iteration is greater than max_iter or the delta of self.inertia_ is smaller than tol.
         # repeat n_init times and keep the best run (cluster_centers_, inertia_) with the lowest inertia_.
@@ -31,27 +37,24 @@ from pdb import set_trace
         # Output cluster_centers (list)
 
         if self.init == "random":
-            cluster_centers = [X[np.random.randint(X.shape[0]), :] for i in range(self.n_clusters)]
-        
+            randomCenter = np.random.choice(len(X), self.n_clusters, replace=False)
+            cluster_centers = [X[i] for i in randomCenter]
+            return cluster_centers
+
         elif self.init == "k-means++":
-            cluster_centers = []
-            cluster_centers.append(X[np.random.randint(X.shape[0]), :])
- 
-            for c in range(self.n_clusters - 1):
-                dist = []
-                for i in range(X.shape[0]):
-                    point = X[i, :]
-                    d = float('inf')
-                    
-                    for j in cluster_centers:
-                        pt_dist = self.dist(point, j)
-                        d = min(d, pt_dist)
-                    dist.append(d)
-                         
-                dist = np.array(dist)
-                centroid_new = X[np.argmax(dist), :]
-                cluster_centers.append(centroid_new)
+
+            cluster_centroids = []
+        
+            cluster_centroids.append(X[np.random.choice(X.shape[0], 1)][0])
+            
+            # while clstr_n < self.n_clusters-1:
+            for cluster in self.n_clusters-1:
+            
+                dists = [np.min([self.dist(rec, centroid) for centroid in cluster_centroids]) for rec in X]
+                dists = dists/np.sum(dists)
                 
+                cluster_centroids.append(X[np.random.choice(X.shape[0], 1, p = dists)][0])
+
         else:
             raise Exception("Unknown value of self.init.")
         return cluster_centers
@@ -63,7 +66,6 @@ from pdb import set_trace
 
         # Initiate cluster centers
         cluster_centers = self.initiate(X)
-        print(cluster_centers)
         last_inertia = None
         # Iterate
         for i in range(self.max_iter+1):
@@ -71,25 +73,21 @@ from pdb import set_trace
             clusters = [[] for i in range(self.n_clusters)]
             inertia = 0
             for x in X:
-                #print(x)
                 # calculate distances between x and each cluster center
                 dists = [self.dist(x, center) for center in cluster_centers]
-                #print(dists)
                 # calculate inertia
-                #print("dist",np.min(dists))
-                inertia += (np.min(dists)**2)
+                inertia += min(dists)**2
                 # find the cluster that x belongs to
                 cluster_id = np.argmin(dists)
-                
-                #print("id",np.argmin(dists))
                 # add x to that cluster
                 clusters[cluster_id].append(x)
 
             if (last_inertia and last_inertia - inertia < self.tol) or i==self.max_iter:
                 break
             # Update cluster centers
-    
-            cluster_centers = [np.mean(cluster, axis=0) for cluster in clusters]
+            for c_id,cluster in enumerate(clusters):
+                cluster_mean = np.mean(cluster,axis=0)
+                cluster_centers[c_id] = cluster_mean 
 
             last_inertia = inertia
 
@@ -130,4 +128,6 @@ from pdb import set_trace
     def fit_transform(self, X):
         self.fit(X)
         return self.transform(X)
+
+
 

@@ -21,14 +21,14 @@ class my_normalizer:
         self.scalers = []
         if self.axis == 1:
             for col in range(n):
-                offset, scaler = self.vector_norm(X_array[:, col])
-                self.offsets.append(offset)
-                self.scalers.append(scaler)
+                offsete, scalere = self.vector_norm(X_array[:, col])
+                self.offsets.append(offsete)
+                self.scalers.append(scalere)
         elif self.axis == 0:
             for row in range(m):
-                offset, scaler = self.vector_norm(X_array[row])
-                self.offsets.append(offset)
-                self.scalers.append(scaler)
+                offsete, scalere = self.vector_norm(X_array[row])
+                self.offsets.append(offsete)
+                self.scalers.append(scalere)
         else:
             raise Exception("Unknown axis.")
 
@@ -50,22 +50,26 @@ class my_normalizer:
         return self.transform(X)
 
     def vector_norm(self, x):
+        #print(type(x))
         # Calculate the offset and scaler for input vector x
+        offset=0
+        scaler=0
         if self.norm == "Min-Max":
-            # Write your own code below
+            offset=min(x)
+            scaler=max(x)-min(x)
 
         elif self.norm == "L1":
-            # Write your own code below
+            scaler=np.sum(np.abs(x))
 
         elif self.norm == "L2":
-            # Write your own code below
+            scaler=np.sqrt(np.sum(np.square(x)))
 
         elif self.norm == "Standard_Score":
-            # Write your own code below
-
+            offset=np.mean(x)
+            scaler=np.std(x)
         else:
             raise Exception("Unknown normlization.")
-        return offset, scaler
+        return offset, scaler;
 
 class my_pca:
     def __init__(self, n_components = 5):
@@ -79,13 +83,16 @@ class my_pca:
         #  Calculates:
         #     self.principal_components: the top n_components principal_components
         U, s, Vh = svd(X)
+        
+        self.principal_components = Vh[:self.n_components].T
+        
         # Write your own code below
 
 
     def transform(self, X):
         #     X_pca = X.dot(self.principal_components)
         X_array = np.asarray(X)
-        return X_array.dot(self.principal_components)
+        return X_array.dot(self.principal_components);
 
     def fit_transform(self, X):
         self.fit(X)
@@ -105,7 +112,10 @@ def stratified_sampling(y, ratio, replace = True):
     if ratio<=0 or ratio>=1:
         raise Exception("ratio must be 0 < ratio < 1.")
     y_array = np.asarray(y)
+    print(y_array)
+    
+    
     # Write your own code below
 
 
-    return sample.astype(int)
+    return;# sample.astype(int)
