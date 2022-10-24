@@ -178,7 +178,7 @@ class my_evaluation:
                         tn -= 1
                         pre_fpr = fpr
                         if (fp + tn) != 0:
-                            fpr = (float(fp) / (fp + tn))  
+                            fpr = ((fp) / (fp + tn))  
                         else:
                             fpr= 0
                         auc+= ((fpr-pre_fpr) * tpr)

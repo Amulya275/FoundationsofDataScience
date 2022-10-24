@@ -63,14 +63,14 @@ class my_evaluation:
             tp = self.confusion_matrix[target]["TP"]
             fp = self.confusion_matrix[target]["FP"]
             if tp+fp == 0:
-                prec = 0
+                precsn = 0
             else:
-                prec = float(tp) / (tp + fp)
+                precsn = float(tp) / (tp + fp)
         else:
             if average == "micro":
-                prec = self.accuracy()
+                precsn = self.accuracy()
             else:
-                prec = 0
+                precsn = 0
                 n = len(self.actuals)
                 for label in self.classes_:
                     tp = self.confusion_matrix[label]["TP"]
@@ -85,8 +85,8 @@ class my_evaluation:
                         ratio = Counter(self.actuals)[label] / float(n)
                     else:
                         raise Exception("Unknown type of average.")
-                    prec += prec_label * ratio
-        return prec
+                    precsn += prec_label * ratio
+        return precsn
 
     def recall(self, target=None, average = "macro"):
         # compute recall
@@ -139,14 +139,19 @@ class my_evaluation:
                 f1_score = 2.0 * precsion * recl / (precsion + recl)
         else:
             if average == "micro":
-                precsion = recl = self.accuracy()
+                f1_score = self.accuracy()
             else:
-                precsion = self.precision(target = target, average=average)
-                recl = self.recall(target = target, average=average)
-            if precsion + recl == 0:
                 f1_score = 0
-            else:
-                f1_score = 2.0 * precsion * recl / (precsion + recl)
+                n = len(self.actuals)
+                for label in self.classes_:
+                    f1_label = self.f1(label,average)
+                    if average == "macro":
+                        ratio = 1 / len(self.classes_)
+                    elif average == "weighted":
+                        ratio = Counter(self.actuals)[label] / float(n)
+                    else:
+                        raise Exception("Unknown type of average.")
+                    f1_score += f1_label * ratio
 
         return f1_score
 
