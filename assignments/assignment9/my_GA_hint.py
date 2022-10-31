@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-from pdb import set_trace
 
 
 class my_GA:
@@ -77,15 +76,14 @@ class my_GA:
             # write your own code below
             # Cross validation:
             indices = [i for i in range(len(self.data_y))]
-            print(indices)
             np.random.shuffle(indices)
             size = int(np.ceil(len(self.data_y) / float(self.crossval_fold)))
-            objs_crossval = None
+            objs_crossval = []
             for fold in range(self.crossval_fold):
                 start = int(fold * size)
                 end = start + size
-                test_indices = indices["write your own code"]
-                train_indices = indices["write your own code"] + indices["write your own code"]
+                test_indices = indices[start:end]
+                train_indices = [i for i in indices if i not in test_indices]
                 X_train = self.data_X.loc[train_indices]
                 X_train.index = range(len(X_train))
                 X_test = self.data_X.loc[test_indices]
@@ -95,19 +93,15 @@ class my_GA:
                 y_test = self.data_y.loc[test_indices]
                 y_test.index = range(len(y_test))
                 clf.fit(X_train, y_train)
-                predictions = "write your own code"
+                predictions = clf.predict(X_test)
                 try:
-                    pred_proba = "write your own code"
+                    pred_proba = clf.predict_proba(X_test)
                 except:
                     pred_proba = None
-                actuals = "write your own code"
+                actuals = y_test
                 objs = np.array(self.obj_func(predictions, actuals, pred_proba))
-                if type(objs_crossval) == type(None):
-                    objs_crossval = "write your own code"
-                else:
-                    objs_crossval += "write your own code"
-
-            objs_crossval = objs_crossval / float(len(self.data_y))
+                objs_crossval.append(objs)
+            objs_crossval = np.array(objs_crossval)[0]
             self.evaluated[decision] = objs_crossval
         return self.evaluated[decision]
 
@@ -120,8 +114,11 @@ class my_GA:
             return 0
         obj_a = self.evaluate(a)
         obj_b = self.evaluate(b)
-        # write your own code below
-        if "write your own code":
+    
+        allfac = np.all(obj_b >= obj_a)
+        anyfac = np.any(obj_b > obj_a)
+        
+        if allfac and anyfac:
             return 1
         else:
             return -1
@@ -139,7 +136,7 @@ class my_GA:
         modified = False
         for i in range(len(pf_best)):
             for j in range(len(pf_new)):
-                if "write your own code":
+                if self.is_better(pf_best[i], pf_new[j]) == 1:
                     pf_best[i] = pf_new[j]
                     pf_new.pop(j)
                     modified = True
@@ -148,7 +145,7 @@ class my_GA:
         for j in range(len(pf_new)):
             not_dominated = True
             for i in range(len(pf_best)):
-                if "write your own code":
+                if self.is_better(pf_best[i], pf_new[j]) != -1:
                     not_dominated = False
                     break
             if not_dominated:
@@ -198,7 +195,7 @@ class my_GA:
         def cross(a, b):
             new_point = []
             for i in range(len(a)):
-                if "write your own code":
+                if np.random.rand() <= 0.5:
                     new_point.append(a[i])
                 else:
                     new_point.append(b[i])
@@ -255,6 +252,3 @@ class my_GA:
             self.crossover()
             self.mutate()
         return self.pf_best
-
-
-
