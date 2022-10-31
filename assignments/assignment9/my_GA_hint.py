@@ -77,6 +77,7 @@ class my_GA:
             # write your own code below
             # Cross validation:
             indices = [i for i in range(len(self.data_y))]
+            print(indices)
             np.random.shuffle(indices)
             size = int(np.ceil(len(self.data_y) / float(self.crossval_fold)))
             objs_crossval = None
