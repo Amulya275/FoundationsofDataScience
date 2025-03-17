@@ -1,5 +1,6 @@
 # Foundations of Data Science
 
+<h3 align="center">This repository contains my assignments for DSCI-633: Foundations of Data Science.</h3>
 [<img width=900 src="https://github.com/hil-se/fds/blob/master/img/title.png?raw=yes">]
 
 ## Course Materials
