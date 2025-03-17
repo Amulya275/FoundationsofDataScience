@@ -1,1 +1,1 @@
-# DSCI-633
+# Foundations of Data Science
